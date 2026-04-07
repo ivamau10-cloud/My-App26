@@ -1,6 +1,10 @@
+import { Video } from "expo-av";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  FlatList,
   Image,
+  KeyboardTypeOptions,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -9,13 +13,11 @@ import {
   View,
 } from "react-native";
 
-// Separador visual
 function Divider() {
   return <View style={styles.divisor} />;
 }
 
-//  Título de sección
-function Seccion({ icono, titulo }) {
+function Seccion({ icono, titulo }: { icono: string; titulo: string }) {
   return (
     <View style={styles.seccionHeader}>
       <Text style={styles.seccionIcono}>{icono}</Text>
@@ -24,8 +26,7 @@ function Seccion({ icono, titulo }) {
   );
 }
 
-// Badge / Chip
-function Badge({ texto }) {
+function Badge({ texto }: { texto: string }) {
   return (
     <View style={styles.badge}>
       <Text style={styles.badgeText}>{texto}</Text>
@@ -33,8 +34,7 @@ function Badge({ texto }) {
   );
 }
 
-// Botón reutilizable
-function Boton({ texto, onPress }) {
+function Boton({ texto, onPress }: { texto: string; onPress: () => void }) {
   return (
     <Pressable style={styles.boton} onPress={onPress}>
       <Text style={styles.botonTexto}>{texto}</Text>
@@ -42,8 +42,15 @@ function Boton({ texto, onPress }) {
   );
 }
 
-// Campo de formulario
-function Campo({ label, placeholder, teclado = "default" }) {
+function Campo({
+  label,
+  placeholder,
+  teclado = "default",
+}: {
+  label: string;
+  placeholder: string;
+  teclado?: KeyboardTypeOptions;
+}) {
   return (
     <View style={styles.campo}>
       <Text style={styles.label}>{label}</Text>
@@ -57,8 +64,15 @@ function Campo({ label, placeholder, teclado = "default" }) {
   );
 }
 
-// Tarjeta informativa
-function Tarjeta({ icono, titulo, descripcion }) {
+function Tarjeta({
+  icono,
+  titulo,
+  descripcion,
+}: {
+  icono: string;
+  titulo: string;
+  descripcion: string;
+}) {
   return (
     <View style={styles.card}>
       <Text style={styles.cardIcon}>{icono}</Text>
@@ -70,8 +84,15 @@ function Tarjeta({ icono, titulo, descripcion }) {
   );
 }
 
-// Mini tarjeta (solo UI)
-function MiniCard({ icono, titulo, valor }) {
+function MiniCard({
+  icono,
+  titulo,
+  valor,
+}: {
+  icono: string;
+  titulo: string;
+  valor: string;
+}) {
   return (
     <View style={styles.miniCard}>
       <Text style={styles.miniIcon}>{icono}</Text>
@@ -81,8 +102,7 @@ function MiniCard({ icono, titulo, valor }) {
   );
 }
 
-// Fila de resumen
-function Estadistica({ label, value }) {
+function Estadistica({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.statRow}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -91,26 +111,84 @@ function Estadistica({ label, value }) {
   );
 }
 
-export default function App() {
-  // ÚNICA funcionalidad permitida en este laboratorio
+//COMPONENTE VIDEO
+function VideoCard({ source, isPlaying }: { source: any; isPlaying: boolean }) {
+  return (
+    <View style={styles.videoCard}>
+      <Video
+        source={source}
+        style={styles.video}
+        useNativeControls
+        resizeMode="cover"
+        isLooping={false}
+        shouldPlay={isPlaying}
+        isMuted={false}
+      />
+    </View>
+  );
+}
+
+export default function HomeScreen() {
   const [estado, setEstado] = useState("Disponible");
+  const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(
+    null,
+  );
+  const router = useRouter();
 
   const cambiarEstado = () => {
-    setEstado((prev) => (prev === "Disponible" ? "En clase 👩‍💻" : "Disponible"));
+    setEstado((prev) => (prev === "Disponible" ? "Votando 🏁" : "Disponible"));
   };
+
+  const verDetalle = () => {
+    router.push(
+      `/detalle?piloto=${encodeURIComponent("Marc Márquez")}&equipo=${encodeURIComponent(
+        "Ducati",
+      )}&circuito=${encodeURIComponent("Mugello")}&estado=${encodeURIComponent(
+        estado,
+      )}`,
+    );
+  };
+
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
+
+  const onViewableItemsChanged = ({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setCurrentPlayingIndex(viewableItems[0].index);
+    } else {
+      setCurrentPlayingIndex(null);
+    }
+  };
+
+  const videoData = [
+    { source: require("../../assets/videos/video1.mp4") },
+    { source: require("../../assets/videos/video2.mp4") },
+    { source: require("../../assets/videos/video3.mp4") },
+    { source: require("../../assets/videos/video4.mp4") },
+  ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* HEADER PERFIL */}
       <View style={styles.header}>
-        <Image
-          source={require("../../assets/perfil.jpg")}
-          style={styles.foto}
+        <Video
+          source={require("../../assets/videos/video1.mp4")}
+          style={styles.backgroundVideo}
+          resizeMode="cover"
+          isLooping
+          isMuted
+          shouldPlay
         />
+        <View style={styles.fotoPlaceholder}>
+          <Image
+            source={require("../../assets/images/perfil.jpg")}
+            style={styles.fotoIcon}
+          />
+        </View>
 
         <View style={styles.headerInfo}>
           <Text style={styles.nombre}>Encuesta MotoGP</Text>
-          <Text style={styles.subtitulo}>Opiniones de fans</Text>
+          <Text style={styles.subtitulo}>
+            Opiniones de fans y datos de carrera.
+          </Text>
 
           <View style={styles.estadoRow}>
             <Text style={styles.estadoLabel}>Participación:</Text>
@@ -121,75 +199,59 @@ export default function App() {
         </View>
       </View>
 
-      {/* BADGES */}
       <View style={styles.badgesContainer}>
         <Badge texto="Piloto" />
         <Badge texto="Equipo" />
         <Badge texto="Circuito" />
         <Badge texto="Temporada" />
-        <Badge texto="Voto" />
-        <Badge texto="Fan" />
       </View>
 
       <Divider />
 
-      {/* FORMULARIO */}
       <Seccion icono="🏁" titulo="Encuesta de Carreras" />
 
       <Campo label="Piloto favorito" placeholder="Ej: Márquez" />
       <Campo label="Equipo" placeholder="Ej: Ducati" />
       <Campo label="Circuito preferido" placeholder="Ej: Mugello" />
-      <Campo label="GP favorito" placeholder="Ej: España" />
-      <Campo label="Temporada" placeholder="Ej: 2026" />
-      <Campo label="Comentarios" placeholder="Tu opinión" />
 
       <Divider />
 
-      {/* COMPONENTES EXTRA (UI) */}
       <Seccion icono="🧩" titulo="Resumen Visual" />
 
       <View style={styles.miniGrid}>
         <MiniCard icono="🏍️" titulo="GP" valor="España" />
-        <MiniCard icono="📍" titulo="Pista" valor="Circuito" />
+        <MiniCard icono="📍" titulo="Pista" valor="Mugello" />
         <MiniCard icono="📅" titulo="Fecha" valor="Junio" />
       </View>
 
-      <View style={styles.statsBox}>
-        <Text style={styles.statsTitle}>Resultados</Text>
-        <Estadistica label="Votos totales" value="120" />
-        <Estadistica label="Participantes" value="45" />
-        <Estadistica label="Encuestas" value="3" />
-      </View>
-
+      {/* 🎬 SECCIÓN DE VIDEOS */}
       <Divider />
+      <Seccion icono="🎬" titulo="Videos MotoGP" />
 
-      {/* TARJETAS */}
-      <Seccion icono="📌" titulo="Tarjetas Informativas" />
-
-      <Tarjeta
-        icono="📊"
-        titulo="Pregunta 1"
-        descripcion="¿Quién ganará el próximo GP?"
-      />
-      <Tarjeta
-        icono="📊"
-        titulo="Pregunta 2"
-        descripcion="¿Qué equipo te impresiona más?"
-      />
-      <Tarjeta
-        icono="📊"
-        titulo="Pregunta 3"
-        descripcion="¿Cuál es tu circuito favorito?"
+      <FlatList
+        data={videoData}
+        renderItem={({ item, index }) => (
+          <VideoCard
+            source={item.source}
+            isPlaying={currentPlayingIndex === index}
+          />
+        )}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+        keyExtractor={(item, index) => index.toString()}
       />
 
-      {/* FOOTER */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
           🏁 Gracias por participar en la encuesta MotoGP.
         </Text>
-        <Text style={styles.footerWarn}>
-          📌 Comparte tus resultados con otros fans.
-        </Text>
+      </View>
+
+      <View style={styles.footerActions}>
+        <Boton texto="Ver ranking" onPress={() => router.push("/explore")} />
+        <Boton texto="Ver detalle" onPress={verDetalle} />
       </View>
     </ScrollView>
   );
@@ -198,111 +260,124 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     padding: 18,
-    backgroundColor: "#000",
+    backgroundColor: "#050505",
   },
 
   header: {
     backgroundColor: "#111",
-    borderRadius: 16,
-    padding: 14,
+    borderRadius: 18,
+    padding: 16,
     flexDirection: "row",
-    gap: 12,
-    elevation: 3,
+    alignItems: "center",
+    marginBottom: 16,
+    overflow: "hidden",
   },
 
-  foto: {
+  backgroundVideo: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
+  },
+
+  fotoPlaceholder: {
     width: 90,
     height: 90,
-    borderRadius: 45,
+    borderRadius: 22,
+    backgroundColor: "#1f1f1f",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 14,
+  },
+
+  fotoIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
   },
 
   headerInfo: {
     flex: 1,
-    justifyContent: "center",
   },
 
   nombre: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    color: "white",
+    color: "#fff",
   },
 
   subtitulo: {
-    color: "white",
-    marginBottom: 6,
+    color: "#d1d5db",
+    marginBottom: 12,
   },
 
   estadoRow: {
     flexDirection: "row",
-    gap: 6,
-    alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   estadoLabel: {
-    fontWeight: "bold",
-    color: "white",
+    color: "#fff",
+    marginRight: 8,
   },
 
   estado: {
-    color: "white",
+    color: "#fff",
   },
 
   boton: {
-    backgroundColor: "#c00",
-    paddingVertical: 10,
-    borderRadius: 10,
+    backgroundColor: "#e10600",
+    padding: 12,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   botonTexto: {
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
   },
 
   badgesContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    marginTop: 12,
+    marginBottom: 16,
   },
 
   badge: {
-    backgroundColor: "#c00",
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    backgroundColor: "#e10600",
+    padding: 8,
     borderRadius: 999,
-    elevation: 2,
+    marginRight: 8,
+    marginBottom: 8,
   },
 
   badgeText: {
+    color: "#fff",
     fontSize: 12,
-    fontWeight: "600",
-    color: "white",
   },
 
   divisor: {
     height: 1,
-    backgroundColor: "#c00",
-    marginVertical: 16,
+    backgroundColor: "#e10600",
+    marginVertical: 18,
   },
 
   seccionHeader: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 10,
+    marginBottom: 12,
   },
 
   seccionIcono: {
-    fontSize: 16,
-    color: "white",
+    fontSize: 18,
+    color: "#fff",
+    marginRight: 8,
   },
 
   seccionTitulo: {
-    fontSize: 16,
+    color: "#fff",
     fontWeight: "bold",
-    color: "white",
   },
 
   campo: {
@@ -310,121 +385,67 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    marginBottom: 6,
-    fontWeight: "600",
-    color: "white",
+    color: "#fff",
   },
 
   input: {
-    backgroundColor: "#222",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    elevation: 2,
-    color: "white",
+    backgroundColor: "#121212",
+    padding: 12,
+    borderRadius: 14,
+    color: "#fff",
   },
 
   miniGrid: {
     flexDirection: "row",
-    gap: 10,
   },
 
   miniCard: {
     flex: 1,
     backgroundColor: "#111",
-    padding: 12,
-    borderRadius: 14,
-    elevation: 2,
+    padding: 14,
+    borderRadius: 18,
+    marginRight: 10,
     alignItems: "center",
   },
 
   miniIcon: {
-    fontSize: 18,
-    marginBottom: 6,
+    fontSize: 20,
   },
 
   miniTitle: {
-    fontSize: 12,
-    color: "gray",
+    color: "#9ca3af",
   },
 
   miniValue: {
-    fontSize: 16,
+    color: "#fff",
     fontWeight: "bold",
-    marginTop: 4,
-  },
-
-  statsBox: {
-    marginTop: 12,
-    backgroundColor: "#111",
-    borderRadius: 14,
-    padding: 12,
-    elevation: 2,
-  },
-
-  statsTitle: {
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-
-  statRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 6,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f1f1",
-  },
-
-  statLabel: {
-    color: "white",
-    fontWeight: "600",
-  },
-
-  statValue: {
-    color: "white",
-  },
-
-  card: {
-    flexDirection: "row",
-    gap: 12,
-    backgroundColor: "#111",
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 10,
-    elevation: 3,
-    alignItems: "center",
-  },
-
-  cardIcon: {
-    fontSize: 22,
-  },
-
-  cardTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-  },
-
-  cardText: {
-    color: "white",
-    marginTop: 2,
   },
 
   footer: {
-    marginTop: 18,
-    padding: 12,
-    backgroundColor: "#111",
-    borderRadius: 14,
-    elevation: 2,
+    marginTop: 20,
   },
 
   footerText: {
-    color: "white",
-    fontSize: 13,
+    color: "#fff",
   },
 
-  footerWarn: {
-    marginTop: 6,
-    color: "white",
-    fontSize: 12,
+  footerActions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+
+  videoCard: {
+    width: 160,
+    height: 260,
+    marginRight: 12,
+    borderRadius: 16,
+    overflow: "hidden",
+    backgroundColor: "#111",
+  },
+
+  video: {
+    width: "100%",
+    height: "100%",
   },
 });

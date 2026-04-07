@@ -1,112 +1,389 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { IconSymbol } from "@/components/ui/icon-symbol";
 
-export default function TabTwoScreen() {
+const chartData = [
+  { label: "Q1", amount: 68, color: "#e10600" },
+  { label: "Q2", amount: 82, color: "#f97316" },
+  { label: "Q3", amount: 74, color: "#facc15" },
+  { label: "R1", amount: 91, color: "#a855f7" },
+  { label: "R2", amount: 88, color: "#38bdf8" },
+];
+
+const pilots = [
+  { name: "Marc Márquez", detail: "Ducati" },
+  { name: "Fabio Quartararo", detail: "Yamaha" },
+  { name: "Francesco Bagnaia", detail: "Ducati" },
+];
+
+const teams = [
+  { name: "Ducati Lenovo", detail: "Máxima potencia" },
+  { name: "Monster Energy", detail: "Estrategia agresiva" },
+  { name: "Repsol Honda", detail: "Historial ganador" },
+];
+
+const insights = [
+  {
+    label: "Velocidad media",
+    value: "312 km/h",
+    badge: "Top",
+    color: "#e10600",
+  },
+  {
+    label: "Vueltas rápidas",
+    value: "4",
+    badge: "Élite",
+    color: "#f97316",
+  },
+  {
+    label: "Pit stops",
+    value: "2",
+    badge: "Estrategia",
+    color: "#38bdf8",
+  },
+];
+
+export default function ExploreScreen() {
+  const router = useRouter();
+  const [tab, setTab] = useState<"Pilotos" | "Equipos">("Pilotos");
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [voteMessage, setVoteMessage] = useState<string>("");
+
+  const options = tab === "Pilotos" ? pilots : teams;
+
+  const handleTabSelect = (option: "Pilotos" | "Equipos") => {
+    setTab(option);
+    setSelectedItem(null);
+    setVoteMessage("");
+  };
+
+  const handleVote = () => {
+    if (!selectedItem) {
+      setVoteMessage("Selecciona primero un elemento para votar.");
+      return;
+    }
+
+    setVoteMessage(`¡Gracias por votar por ${selectedItem}!`);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <ScrollView style={styles.page} contentContainerStyle={styles.content}>
+      <View style={styles.hero}>
+        <Text style={styles.heroTitle}>MotoGP Stats</Text>
+        <Text style={styles.heroSubtitle}>
+          Entrena tu ojo de fan con datos de pilotos y equipos.
+        </Text>
+      </View>
+
+      <View style={styles.tabRow}>
+        {(["Pilotos", "Equipos"] as const).map((option) => (
+          <Pressable
+            key={option}
+            onPress={() => handleTabSelect(option)}
+            style={[
+              styles.tabButton,
+              tab === option && {
+                backgroundColor: "#e10600",
+                borderColor: "#e10600",
+              },
+            ]}
+          >
+            <Text
+              style={[styles.tabText, tab === option && styles.tabTextActive]}
+            >
+              {option}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>{tab}</Text>
+        <Text style={styles.cardText}>
+          Elige tu {tab === "Pilotos" ? "piloto" : "equipo"} favorito y vota.
+        </Text>
+        <View style={styles.optionGrid}>
+          {options.map((item) => (
+            <Pressable
+              key={item.name}
+              onPress={() => {
+                setSelectedItem(item.name);
+                setVoteMessage("");
+              }}
+              style={[
+                styles.optionButton,
+                selectedItem === item.name && styles.optionButtonActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.optionText,
+                  selectedItem === item.name && styles.optionTextActive,
+                ]}
+              >
+                {item.name}
+              </Text>
+              <Text style={styles.optionLabel}>{item.detail}</Text>
+            </Pressable>
+          ))}
+        </View>
+        <Pressable
+          style={[styles.primaryButton, !selectedItem && styles.disabledButton]}
+          onPress={handleVote}
+          disabled={!selectedItem}
+        >
+          <Text style={styles.primaryButtonText}>
+            {selectedItem ? `Votar por ${selectedItem}` : "Seleccionar antes"}
+          </Text>
+        </Pressable>
+        {voteMessage ? (
+          <Text style={styles.voteFeedback}>{voteMessage}</Text>
+        ) : null}
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Rendimiento de carrera</Text>
+          <IconSymbol name="chart.bar.fill" size={20} color="#e10600" />
+        </View>
+        <View style={styles.chart}>
+          {chartData.map((item) => (
+            <View key={item.label} style={styles.chartColumn}>
+              <View
+                style={[
+                  styles.chartBar,
+                  { height: `${item.amount}%`, backgroundColor: item.color },
+                ]}
+              />
+              <Text style={styles.chartLabel}>{item.label}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Insights rápidas</Text>
+        {insights.map((item) => (
+          <View key={item.label} style={styles.insightRow}>
+            <View>
+              <Text style={styles.insightLabel}>{item.label}</Text>
+              <Text style={styles.insightValue}>{item.value}</Text>
+            </View>
+            <View style={[styles.badge, { backgroundColor: item.color }]}>
+              <Text style={styles.badgeText}>{item.badge}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Avance del circuito</Text>
+        <Text style={styles.cardText}>
+          Selecciona un equipo para ver su ritmo y consistencia en las últimas
+          carreras.
+        </Text>
+        <Pressable
+          style={styles.primaryButton}
+          onPress={() => router.push("/videos")}
+        >
+          <IconSymbol
+            name="play.fill"
+            size={18}
+            color="#fff"
+            style={styles.buttonIcon}
+          />
+          <Text style={styles.primaryButtonText}>Ver videos</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  page: {
+    flex: 1,
+    backgroundColor: "#050505",
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  content: {
+    padding: 20,
+    paddingBottom: 48,
+  },
+  hero: {
+    backgroundColor: "#111",
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 6,
+  },
+  heroTitle: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  heroSubtitle: {
+    color: "#d1d5db",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+  tabRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#333",
+    marginHorizontal: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#111",
+  },
+  tabText: {
+    color: "#d1d5db",
+    fontWeight: "700",
+  },
+  tabTextActive: {
+    color: "#fff",
+  },
+  card: {
+    backgroundColor: "#111",
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 4,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  chart: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    height: 200,
+    paddingBottom: 10,
+  },
+  chartColumn: {
+    alignItems: "center",
+    flex: 1,
+    marginHorizontal: 6,
+  },
+  chartBar: {
+    width: 22,
+    borderRadius: 999,
+  },
+  chartLabel: {
+    marginTop: 10,
+    color: "#9ca3af",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  insightRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  insightLabel: {
+    fontSize: 15,
+    color: "#d1d5db",
+  },
+  insightValue: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  badge: {
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+  },
+  badgeText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 12,
+  },
+  cardText: {
+    fontSize: 15,
+    color: "#d1d5db",
+    lineHeight: 22,
+    marginBottom: 18,
+  },
+  optionGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  optionButton: {
+    width: "48%",
+    backgroundColor: "#1a1a1a",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#222",
+  },
+  optionButtonActive: {
+    backgroundColor: "#e10600",
+    borderColor: "#e10600",
+  },
+  optionText: {
+    color: "#fff",
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  optionTextActive: {
+    color: "#050505",
+  },
+  optionLabel: {
+    color: "#9ca3af",
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  voteFeedback: {
+    color: "#d1d5db",
+    marginTop: 12,
+    textAlign: "center",
+  },
+  primaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e10600",
+    fontWeight: "700",
+    fontSize: 15,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  buttonIcon: {
+    marginRight: 10,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 15,
   },
 });
