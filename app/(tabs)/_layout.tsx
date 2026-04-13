@@ -44,6 +44,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="detalle"
+        options={{
+          title: "Detalle",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="info.circle.fill" color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

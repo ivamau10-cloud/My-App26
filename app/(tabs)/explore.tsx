@@ -66,6 +66,10 @@ export default function ExploreScreen() {
     }
 
     setVoteMessage(`¡Gracias por votar por ${selectedItem}!`);
+    setSelectedItem(null);
+    setTimeout(() => {
+      setVoteMessage("");
+    }, 3000);
   };
 
   return (
@@ -240,7 +244,7 @@ const styles = StyleSheet.create({
   tabButton: {
     flex: 1,
     paddingVertical: 12,
-    borderRadius: 14,
+    borderRadius: 999,
     borderWidth: 1,
     borderColor: "#333",
     marginHorizontal: 4,
@@ -339,7 +343,7 @@ const styles = StyleSheet.create({
   optionButton: {
     width: "48%",
     backgroundColor: "#1a1a1a",
-    borderRadius: 18,
+    borderRadius: 999,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
@@ -374,6 +378,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#e10600",
     fontWeight: "700",
     fontSize: 15,
+    borderRadius: 999,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    marginTop: 16,
   },
   disabledButton: {
     opacity: 0.6,

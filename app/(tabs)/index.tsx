@@ -1,5 +1,4 @@
-import { Video } from "expo-av";
-import { useRouter } from "expo-router";
+import { ResizeMode, Video } from "expo-av";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -26,11 +25,22 @@ function Seccion({ icono, titulo }: { icono: string; titulo: string }) {
   );
 }
 
-function Badge({ texto }: { texto: string }) {
+function Badge({
+  texto,
+  selected,
+  onPress,
+}: {
+  texto: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View style={styles.badge}>
+    <Pressable
+      style={[styles.badge, selected && styles.badgeSelected]}
+      onPress={onPress}
+    >
       <Text style={styles.badgeText}>{texto}</Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -46,10 +56,14 @@ function Campo({
   label,
   placeholder,
   teclado = "default",
+  value,
+  onChangeText,
 }: {
   label: string;
   placeholder: string;
   teclado?: KeyboardTypeOptions;
+  value: string;
+  onChangeText: (text: string) => void;
 }) {
   return (
     <View style={styles.campo}>
@@ -59,27 +73,9 @@ function Campo({
         keyboardType={teclado}
         placeholderTextColor="#8a8a8a"
         style={styles.input}
+        value={value}
+        onChangeText={onChangeText}
       />
-    </View>
-  );
-}
-
-function Tarjeta({
-  icono,
-  titulo,
-  descripcion,
-}: {
-  icono: string;
-  titulo: string;
-  descripcion: string;
-}) {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.cardIcon}>{icono}</Text>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.cardTitle}>{titulo}</Text>
-        <Text style={styles.cardText}>{descripcion}</Text>
-      </View>
     </View>
   );
 }
@@ -102,28 +98,30 @@ function MiniCard({
   );
 }
 
-function Estadistica({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statRow}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
-  );
-}
-
 //COMPONENTE VIDEO
 function VideoCard({ source, isPlaying }: { source: any; isPlaying: boolean }) {
+  const [comment, setComment] = useState("");
+
   return (
     <View style={styles.videoCard}>
       <Video
         source={source}
         style={styles.video}
         useNativeControls
-        resizeMode="cover"
+        resizeMode={ResizeMode.CONTAIN}
         isLooping={false}
         shouldPlay={isPlaying}
         isMuted={false}
       />
+      <View style={styles.commentSection}>
+        <TextInput
+          placeholder="Comenta este video..."
+          placeholderTextColor="#8a8a8a"
+          style={styles.commentInput}
+          value={comment}
+          onChangeText={setComment}
+        />
+      </View>
     </View>
   );
 }
@@ -133,20 +131,57 @@ export default function HomeScreen() {
   const [currentPlayingIndex, setCurrentPlayingIndex] = useState<number | null>(
     null,
   );
-  const router = useRouter();
+  const [piloto, setPiloto] = useState("");
+  const [equipo, setEquipo] = useState("");
+  const [circuito, setCircuito] = useState("");
+  const [encuestaEnviada, setEncuestaEnviada] = useState(false);
+  const [badgeSeleccionado, setBadgeSeleccionado] = useState<string | null>(
+    null,
+  );
+
+  const badgeDetails: Record<string, string[]> = {
+    Piloto: [
+      "Top ranking pilotos: Marc Márquez, Fabio Quartararo, Francesco Bagnaia",
+      "Piloto más votado: Marc Márquez",
+      "Último podio: 1er lugar en Mugello",
+    ],
+    Equipo: [
+      "Equipo líder: Ducati Lenovo",
+      "Estrategia actual: ataque en boxes",
+      "Puntuación de equipo: 248 pts",
+    ],
+    Circuito: [
+      "Circuito favorito: Mugello",
+      "Mejor sector: Último tramo",
+      "Record de vuelta: 1:46.219",
+    ],
+    Temporada: [
+      "Carreras completas: 18",
+      "Ganadores múltiples: 4 pilotos",
+      "Predicción: Ducati favorito",
+    ],
+  };
+
+  const limpiarFormulario = () => {
+    setPiloto("");
+    setEquipo("");
+    setCircuito("");
+    setEstado("Disponible");
+    setEncuestaEnviada(false);
+    setBadgeSeleccionado(null);
+  };
 
   const cambiarEstado = () => {
     setEstado((prev) => (prev === "Disponible" ? "Votando 🏁" : "Disponible"));
+    setEncuestaEnviada(false);
   };
 
-  const verDetalle = () => {
-    router.push(
-      `/detalle?piloto=${encodeURIComponent("Marc Márquez")}&equipo=${encodeURIComponent(
-        "Ducati",
-      )}&circuito=${encodeURIComponent("Mugello")}&estado=${encodeURIComponent(
-        estado,
-      )}`,
-    );
+  const enviarEncuesta = () => {
+    setEncuestaEnviada(true);
+    setBadgeSeleccionado(null);
+    setTimeout(() => {
+      limpiarFormulario();
+    }, 3000);
   };
 
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
@@ -169,14 +204,6 @@ export default function HomeScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Video
-          source={require("../../assets/videos/video1.mp4")}
-          style={styles.backgroundVideo}
-          resizeMode="cover"
-          isLooping
-          isMuted
-          shouldPlay
-        />
         <View style={styles.fotoPlaceholder}>
           <Image
             source={require("../../assets/images/perfil.jpg")}
@@ -200,19 +227,61 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.badgesContainer}>
-        <Badge texto="Piloto" />
-        <Badge texto="Equipo" />
-        <Badge texto="Circuito" />
-        <Badge texto="Temporada" />
+        {(["Piloto", "Equipo", "Circuito", "Temporada"] as const).map(
+          (texto) => (
+            <Badge
+              key={texto}
+              texto={texto}
+              selected={badgeSeleccionado === texto}
+              onPress={() =>
+                setBadgeSeleccionado(badgeSeleccionado === texto ? null : texto)
+              }
+            />
+          ),
+        )}
       </View>
+
+      {badgeSeleccionado ? (
+        <View style={styles.badgeInfoBox}>
+          <Text style={styles.badgeInfoTitle}>{badgeSeleccionado}</Text>
+          {badgeDetails[badgeSeleccionado].map((item) => (
+            <Text key={item} style={styles.badgeInfoText}>
+              • {item}
+            </Text>
+          ))}
+        </View>
+      ) : null}
 
       <Divider />
 
       <Seccion icono="🏁" titulo="Encuesta de Carreras" />
 
-      <Campo label="Piloto favorito" placeholder="Ej: Márquez" />
-      <Campo label="Equipo" placeholder="Ej: Ducati" />
-      <Campo label="Circuito preferido" placeholder="Ej: Mugello" />
+      <Campo
+        label="Piloto favorito"
+        placeholder="Ej: Márquez"
+        value={piloto}
+        onChangeText={setPiloto}
+      />
+      <Campo
+        label="Equipo"
+        placeholder="Ej: Ducati"
+        value={equipo}
+        onChangeText={setEquipo}
+      />
+      <Campo
+        label="Circuito preferido"
+        placeholder="Ej: Mugello"
+        value={circuito}
+        onChangeText={setCircuito}
+      />
+
+      {encuestaEnviada ? (
+        <View style={styles.messageSuccess}>
+          <Text style={styles.messageText}>✓ Encuesta enviada a detalles</Text>
+        </View>
+      ) : (
+        <Boton texto="Enviar Encuesta" onPress={enviarEncuesta} />
+      )}
 
       <Divider />
 
@@ -222,6 +291,12 @@ export default function HomeScreen() {
         <MiniCard icono="🏍️" titulo="GP" valor="España" />
         <MiniCard icono="📍" titulo="Pista" valor="Mugello" />
         <MiniCard icono="📅" titulo="Fecha" valor="Junio" />
+      </View>
+
+      <View style={styles.miniGrid}>
+        <MiniCard icono="🎯" titulo="Votos" valor="1,250" />
+        <MiniCard icono="⭐" titulo="Rating" valor="4.8" />
+        <MiniCard icono="🔥" titulo="Tendencia" valor="↑ 45%" />
       </View>
 
       {/* 🎬 SECCIÓN DE VIDEOS */}
@@ -248,11 +323,6 @@ export default function HomeScreen() {
           🏁 Gracias por participar en la encuesta MotoGP.
         </Text>
       </View>
-
-      <View style={styles.footerActions}>
-        <Boton texto="Ver ranking" onPress={() => router.push("/explore")} />
-        <Boton texto="Ver detalle" onPress={verDetalle} />
-      </View>
     </ScrollView>
   );
 }
@@ -270,16 +340,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
-    overflow: "hidden",
-  },
-
-  backgroundVideo: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: -1,
   },
 
   fotoPlaceholder: {
@@ -290,6 +350,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
+    marginTop: 20,
   },
 
   fotoIcon: {
@@ -397,14 +458,17 @@ const styles = StyleSheet.create({
 
   miniGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
   },
 
   miniCard: {
-    flex: 1,
+    width: "32%",
+    minWidth: 100,
     backgroundColor: "#111",
     padding: 14,
     borderRadius: 18,
-    marginRight: 10,
+    marginBottom: 10,
     alignItems: "center",
   },
 
@@ -423,6 +487,31 @@ const styles = StyleSheet.create({
 
   footer: {
     marginTop: 20,
+  },
+
+  badgeSelected: {
+    backgroundColor: "#e10600",
+  },
+
+  badgeInfoBox: {
+    backgroundColor: "#111",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 18,
+  },
+
+  badgeInfoTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+
+  badgeInfoText: {
+    color: "#d1d5db",
+    fontSize: 14,
+    marginBottom: 6,
+    lineHeight: 20,
   },
 
   footerText: {
@@ -447,5 +536,34 @@ const styles = StyleSheet.create({
   video: {
     width: "100%",
     height: "100%",
+  },
+
+  commentSection: {
+    position: "absolute",
+    bottom: 10,
+    left: 10,
+    right: 10,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 8,
+    padding: 8,
+  },
+
+  commentInput: {
+    color: "#fff",
+    fontSize: 14,
+  },
+
+  messageSuccess: {
+    backgroundColor: "#22c55e",
+    padding: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginVertical: 12,
+  },
+
+  messageText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
