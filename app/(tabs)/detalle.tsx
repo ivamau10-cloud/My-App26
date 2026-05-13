@@ -1,39 +1,44 @@
 import { IconSymbol } from "@/components/ui/icon-symbol";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Colors } from "@/constants/theme";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    useColorScheme,
+    View,
+} from "react-native";
 
-function DetalleCard({
-  piloto,
-  equipo,
-  circuito,
-  estado,
-}: {
-  piloto: string;
-  equipo: string;
-  circuito: string;
-  estado: string;
-}) {
+type DetalleProps = {
+  piloto?: string;
+  equipo?: string;
+  circuito?: string;
+  estado?: string;
+};
+
+function DetalleCard({ piloto, equipo, circuito, estado }: DetalleProps) {
   return (
     <View style={styles.card}>
-      <Text style={styles.nombre}>🏍️ {piloto}</Text>
+      <Text style={styles.nombre}>{piloto || "Sin piloto"}</Text>
       <View style={styles.row}>
         <Text style={styles.label}>Equipo</Text>
-        <Text style={styles.valor}>{equipo}</Text>
+        <Text style={styles.valor}>{equipo || "—"}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.label}>Circuito</Text>
-        <Text style={styles.valor}>{circuito}</Text>
+        <Text style={styles.valor}>{circuito || "—"}</Text>
       </View>
       <View style={styles.row}>
         <Text style={styles.label}>Estado</Text>
         <Text
           style={[
             styles.valor,
-            estado === "Disponible" ? styles.disponible : styles.noDisponible,
+            estado === "activo" ? styles.disponible : styles.noDisponible,
           ]}
         >
-          {estado}
+          {estado || "—"}
         </Text>
       </View>
     </View>
@@ -41,40 +46,41 @@ function DetalleCard({
 }
 
 export default function DetalleScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const piloto = (params.piloto as string) ?? "Marc Márquez";
-  const equipo = (params.equipo as string) ?? "Ducati";
-  const circuito = (params.circuito as string) ?? "Mugello";
-  const estado = (params.estado as string) ?? "Disponible";
 
+  // Mock / local state (can be replaced with real data)
   const [votoPiloto, setVotoPiloto] = useState<string | null>(null);
   const [votoMoto, setVotoMoto] = useState<string | null>(null);
 
-  const pilotos = [
-    "Marc Márquez",
-    "Valentino Rossi",
-    "Jorge Lorenzo",
-    "Dani Pedrosa",
-    "Maverick Viñales",
-  ];
-  const motos = ["Ducati", "Honda", "Yamaha", "Suzuki", "KTM"];
+  const pilotos = ["Valentino", "Marc", "Jorge"];
+  const motos = ["Yamaha", "Ducati", "Honda"];
 
-  const votarPiloto = (pilotoSeleccionado: string) => {
-    setVotoPiloto(pilotoSeleccionado);
-  };
+  const piloto = "Valentino";
+  const equipo = "VR46";
+  const circuito = "Circuito de ejemplo";
+  const estado = "activo";
 
-  const votarMoto = (motoSeleccionada: string) => {
-    setVotoMoto(motoSeleccionada);
-  };
-
+  const votarPiloto = (p: string) => setVotoPiloto(p);
+  const votarMoto = (m: string) => setVotoMoto(m);
   const limpiarVotos = () => {
     setVotoPiloto(null);
     setVotoMoto(null);
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[
+        styles.container,
+        {
+          backgroundColor: isDark
+            ? Colors.dark.background
+            : Colors.light.background,
+        },
+      ]}
+      contentContainerStyle={styles.content}
+    >
       <View style={styles.header}>
         <Pressable
           onPress={() => router.replace("/")}
@@ -158,19 +164,11 @@ export default function DetalleScreen() {
           <Text style={styles.performanceLabel}>Posición actual:</Text>
           <Text style={styles.performanceValue}>1er lugar</Text>
         </View>
-        <View style={styles.performanceRow}>
-          <Text style={styles.performanceLabel}>Vueltas completadas:</Text>
-          <Text style={styles.performanceValue}>25 de 25</Text>
-        </View>
-        <View style={styles.performanceRow}>
-          <Text style={styles.performanceLabel}>Diferencia con 2do:</Text>
-          <Text style={styles.performanceValue}>+2.345s</Text>
-        </View>
       </View>
 
       <View style={styles.performanceCard}>
         <Text style={styles.performanceTitle}>Resumen del Piloto Votado</Text>
-        {votoPiloto && (
+        {votoPiloto ? (
           <>
             <View style={styles.performanceRow}>
               <Text style={styles.performanceLabel}>Piloto:</Text>
@@ -182,17 +180,8 @@ export default function DetalleScreen() {
                 {votoMoto || "No seleccionado"}
               </Text>
             </View>
-            <View style={styles.performanceRow}>
-              <Text style={styles.performanceLabel}>Campeonatos:</Text>
-              <Text style={styles.performanceValue}>3</Text>
-            </View>
-            <View style={styles.performanceRow}>
-              <Text style={styles.performanceLabel}>Victorias totales:</Text>
-              <Text style={styles.performanceValue}>89</Text>
-            </View>
           </>
-        )}
-        {!votoPiloto && (
+        ) : (
           <Text style={styles.noDataText}>
             Selecciona un piloto para ver más detalles
           </Text>
@@ -292,11 +281,6 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     padding: 22,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 4,
   },
   statsTitle: {
     fontSize: 18,
@@ -322,22 +306,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#fff",
     marginTop: 4,
-  },
-  botonRegresar: {
-    backgroundColor: "#e10600",
-    padding: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    shadowColor: "#e10600",
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-  },
-  textoBoton: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
   votingSection: {
     backgroundColor: "#111",
@@ -427,5 +395,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     marginBottom: 20,
+  },
+  textoBoton: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
