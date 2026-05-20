@@ -15,7 +15,7 @@ export default function ModalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   container: {
     flex: 1,
     alignItems: 'center',

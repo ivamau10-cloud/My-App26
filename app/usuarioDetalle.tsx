@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-// --- COMPONENTES AUXILIARES ---
+// --- COMPONENTES AUXILIARES ESTILIZADOS A LA APP ---
 const Seccion = ({ icono, titulo }: { icono: string; titulo: string }) => (
   <View style={styles.seccionHeader}>
     <Text style={styles.seccionIcono}>{icono}</Text>
@@ -13,7 +13,7 @@ const Seccion = ({ icono, titulo }: { icono: string; titulo: string }) => (
 const Campo = ({ label, valor }: { label: string; valor: any }) => (
   <View style={styles.campo}>
     <Text style={styles.label}>{label}</Text>
-    <Text style={styles.valor}>{valor}</Text>
+    <Text style={styles.valor}>{valor || "No especificado"}</Text>
   </View>
 );
 
@@ -23,109 +23,150 @@ export default function UsuarioDetalle() {
   const params = useLocalSearchParams();
 
   return (
-    <ScrollView style={styles.container}>
-      <Pressable style={styles.botonVolver} onPress={() => router.back()}>
+    <ScrollView
+      style={styles.mainWrapper}
+      contentContainerStyle={styles.container}
+    >
+      {/* Botón Volver Estilo Premium */}
+      <Pressable
+        style={({ pressed }) => [
+          styles.botonVolver,
+          pressed && { opacity: 0.7 },
+        ]}
+        onPress={() => router.back()}
+      >
         <Text style={styles.botonVolverTexto}>← Volver</Text>
       </Pressable>
 
+      {/* Header con el Nombre del Usuario */}
       <View style={styles.header}>
+        <Text style={styles.welcomeText}>Detalle del Perfil</Text>
         <Text style={styles.titulo}>{params.nombre}</Text>
       </View>
 
+      {/* Bloque: Información Personal */}
       <View style={styles.card}>
         <Seccion icono="👤" titulo="Información Personal" />
-        <Campo label="Usuario:" valor={params.usuario} />
-        <Campo label="Correo:" valor={params.correo} />
-        <Campo label="Teléfono:" valor={params.telefono} />
-        <Campo label="Sitio web:" valor={params.sitio} />
+        <View style={styles.gridCampos}>
+          <Campo label="Nombre de Usuario" valor={params.usuario} />
+          <Campo label="Correo Electrónico" valor={params.correo} />
+          <Campo label="Teléfono de Contacto" valor={params.telefono} />
+          <Campo label="Sitio Web" valor={params.sitio} />
+        </View>
       </View>
 
+      {/* Bloque: Empresa */}
       <View style={styles.card}>
-        <Seccion icono="🏢" titulo="Empresa" />
-        <Campo label="Nombre:" valor={params.empresa} />
+        <Seccion icono="🏢" titulo="Escudería / Empresa" />
+        <View style={styles.gridCampos}>
+          <Campo label="Nombre Corporativo" valor={params.empresa} />
+        </View>
       </View>
 
+      {/* Bloque: Ubicación */}
       <View style={styles.card}>
-        <Seccion icono="📍" titulo="Ubicación" />
-        <Campo label="Ciudad:" valor={params.ciudad} />
+        <Seccion icono="📍" titulo="Ubicación Base" />
+        <View style={styles.gridCampos}>
+          <Campo label="Ciudad / Sede" valor={params.ciudad} />
+        </View>
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+// --- ESTILOS ADAPTADOS A MOTOGP APP ---
+const styles = StyleSheet.create<any>({
+  mainWrapper: {
+    backgroundColor: "#0a0a0a", // Mismo fondo ultra negro del index
     flex: 1,
-    padding: 18,
-    backgroundColor: "#f3f4f6",
   },
-
-  botonVolver: {
-    marginBottom: 16,
-  },
-
-  botonVolverTexto: {
-    color: "#111827",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-
-  header: {
-    backgroundColor: "white",
+  container: {
     padding: 20,
-    borderRadius: 16,
+    paddingTop: 40,
+  },
+  botonVolver: {
+    alignSelf: "flex-start",
+    backgroundColor: "#141414",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
     marginBottom: 20,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#222",
   },
-
-  titulo: {
-    fontSize: 26,
+  botonVolverTexto: {
+    color: "#fff",
     fontWeight: "bold",
-    color: "#111827",
+    fontSize: 14,
   },
-
+  header: {
+    backgroundColor: "#141414",
+    padding: 20,
+    borderRadius: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: "#222",
+    borderLeftWidth: 4,
+    borderLeftColor: "#e10600", // Detalle en rojo de carreras
+  },
+  welcomeText: {
+    color: "#666",
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  titulo: {
+    fontSize: 24,
+    fontWeight: "900", // Estilo de tipografía pesada
+    color: "#fff",
+  },
   card: {
-    backgroundColor: "white",
-    padding: 16,
-    borderRadius: 16,
+    backgroundColor: "#141414",
+    padding: 18,
+    borderRadius: 20,
     marginBottom: 16,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#222",
   },
-
   seccionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
-    paddingBottom: 12,
+    marginBottom: 14,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
+    borderBottomColor: "#222",
   },
-
   seccionIcono: {
-    fontSize: 24,
-    marginRight: 8,
+    fontSize: 20,
+    marginRight: 10,
   },
-
   seccionTitulo: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#111827",
+    fontWeight: "900",
+    color: "#fff",
   },
-
+  gridCampos: {
+    gap: 12,
+  },
   campo: {
-    marginBottom: 12,
+    backgroundColor: "#0d0d0d", // Contenedor interno oscuro para los datos
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#1a1a1a",
   },
-
   label: {
-    fontSize: 12,
-    color: "#6b7280",
-    fontWeight: "600",
+    fontSize: 11,
+    color: "#666",
+    fontWeight: "700",
+    textTransform: "uppercase",
     marginBottom: 4,
+    letterSpacing: 0.5,
   },
-
   valor: {
-    fontSize: 16,
-    color: "#111827",
+    fontSize: 15,
+    color: "#fff",
     fontWeight: "500",
   },
 });

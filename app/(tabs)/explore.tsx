@@ -205,7 +205,7 @@ export default function ExploreScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   page: {
     flex: 1,
     backgroundColor: "#050505",

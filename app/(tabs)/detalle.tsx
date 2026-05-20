@@ -206,7 +206,7 @@ export default function DetalleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   container: {
     flex: 1,
     backgroundColor: "#050505",

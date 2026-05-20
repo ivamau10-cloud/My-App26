@@ -33,7 +33,7 @@ export function ThemedText({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create<any>({
   default: {
     fontSize: 16,
     lineHeight: 24,
