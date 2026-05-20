@@ -29,7 +29,9 @@ function RootLayoutNav() {
     if (loading) return;
 
     const authRoutes = ["login", "register"];
-    const inAuthRoute = segments.some((segment) => authRoutes.includes(segment));
+    const inAuthRoute = segments.some((segment) =>
+      authRoutes.includes(segment),
+    );
 
     if (!session && !inAuthRoute) {
       // Si no hay sesión iniciada y no está en el login, lo mandamos para allá
@@ -45,16 +47,15 @@ function RootLayoutNav() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        {/* Definimos los dos grupos principales de forma fija */}
-        <Stack.Screen name="(auth)" />
+        {/* Definimos los grupos principales */}
         <Stack.Screen name="(tabs)" />
-        
+
         {/* Pantallas globales fuera de las pestañas */}
         <Stack.Screen
           name="usuarioDetalle"
-          options={{ 
+          options={{
             headerShown: false, // Oculto porque le fabricamos su propio botón premium de volver
-            title: "Detalle del Usuario" 
+            title: "Detalle del Usuario",
           }}
         />
       </Stack>
