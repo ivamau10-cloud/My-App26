@@ -1,8 +1,8 @@
 import { useAuth } from "@/context/AuthContext"; // Importamos tu contexto de autenticación
 import { supabase } from "@/lib/supabase";
-import { ResizeMode, Video } from "expo-av";
 import { useRouter } from "expo-router";
-import React, { useCallback, useRef, useState } from "react";
+import { useVideoPlayer, VideoView } from "expo-video";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -96,15 +96,25 @@ const MiniCard = ({ icono, titulo, valor }: any) => (
 const VideoCard = React.memo(
   ({ source, isPlaying }: { source: any; isPlaying: boolean }) => {
     const [comment, setComment] = useState("");
+    const player = useVideoPlayer(source, (player) => {
+      player.loop = true;
+    });
+
+    useEffect(() => {
+      if (isPlaying) {
+        player.play();
+      } else {
+        player.pause();
+      }
+    }, [isPlaying, player]);
+
     return (
       <View style={styles.videoCard}>
-        <Video
-          source={source}
+        <VideoView
+          player={player}
           style={styles.video}
-          useNativeControls
-          resizeMode={ResizeMode.COVER}
-          shouldPlay={isPlaying}
-          isLooping
+          nativeControls
+          contentFit="cover"
         />
         <View style={styles.commentSection}>
           <TextInput
